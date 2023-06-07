@@ -19,15 +19,15 @@ import javafx.event.ActionEvent;
  */
 public class Controller {
 
-    private ObservableList<Row> rows;
+    private final ObservableList<Row> rows;
 
-    private Model model;
+    private final Model model;
 
-    private FilteredList<Row> filteredRows;
+    private boolean caseToggle;
 
-    private SortedList<Row> filteredResult;
-
-    private boolean caseToggle, inland,ausland;
+    private String searchString;
+    
+    private int selectedSearchColumn;
 
     //private List<Row> data = model.getRows();
     public Controller(ObservableList<Row> rows, Model model) {
@@ -40,19 +40,19 @@ public class Controller {
         this.model = new Model();
         this.rows = FXCollections.observableArrayList();
 
+        searchString = "";
         rows.addAll(model.getRows());
-        
-        filteredRows = new FilteredList<>(rows, bool -> true);
-        filteredResult = new SortedList<>(filteredRows);
 
     }
 
     public void toggleCase() {
         caseToggle = !caseToggle;
+        
+       
     }
-    
-    public void resetFilter(){
-        filteredResult= new SortedList<>(filteredRows);
+
+    private void resetFilter() {
+        rows.setAll(model.getRows());
     }
 
     public ObservableList<Row> getRows() {
@@ -62,178 +62,167 @@ public class Controller {
     public Model getModel() {
         return model;
     }
+    
 
-    public FilteredList<Row> getFilteredRows() {
-
-        return filteredRows;
-    }
-
-    public SortedList<Row> getFilteredResult() {
-        return filteredResult;
-    }
-
-    /*
-    public boolean search(Row row, String newValue) {
-
-        if (newValue.isBlank() || newValue.isEmpty() || newValue == null) {
-            return true;
-        }
-
-        String searchString = newValue.toLowerCase();
-
-        if (row.getUnternehmen().toLowerCase().contains(searchString)) {
-            return true;
-        } else if (row.getOrt().toLowerCase().contains(searchString)) {
-            return true;
-        } else if (row.getPlz().toLowerCase().contains(searchString)) {
-            return true;
-        } else if (row.getStrasse().toLowerCase().contains(searchString)) {
-            return true;
-        } else if (row.isGueterverkehr().toLowerCase().contains(searchString)) {
-            return true;
-        } else if (row.isPersonenverkehr().toLowerCase().contains(searchString)) {
-            return true;
-        } else {
-            return false;
-        }
-    }*/
-    public void searchMaster(String newValue) {
+    public void searchMaster() {
         if (caseToggle) {
-            caseSensitiveSearch2(newValue);   
+            caseSensitiveSearch();
         } else {
-            normalSearch(newValue);   
+            normalSearch();
         }
     }
 
-    public void normalSearch(String newValue) {
-        String searchString = newValue.toLowerCase();
-        filteredRows.setPredicate(row -> {
-            if (newValue.isBlank() || newValue.isEmpty() || newValue == null) {
-                return true;
-            }
-            if (row.getUnternehmen().toLowerCase().contains(searchString)) {
-                return true;
-            } else if (row.getOrt().toLowerCase().contains(searchString)) {
-                return true;
-            } else if (row.getPlz().toLowerCase().contains(searchString)) {
-                return true;
-            } else if (row.getStrasse().toLowerCase().contains(searchString)) {
-                return true;
-            } else if (row.isGueterverkehr().toLowerCase().contains(searchString)) {
-                return true;
-            } else if (row.isPersonenverkehr().toLowerCase().contains(searchString)) {
-                return true;
-            } else {
-                return false;
-            }
-        });
-    }
-    
-    private boolean searchUnternehmen(Row row, String key){
-        return row.getUnternehmen().contains(key);
-    }
-    private boolean searchStrasse(Row row, String key){
-        return row.getStrasse().contains(key);
+    public void caseSensitiveSearch() {
+
+        rows.setAll(model.getRows().filtered(row -> {
+            return searchAll(row);
+        }));
     }
 
-    private boolean searchOrt(Row row, String key){
-        return row.getOrt().contains(key);
-    }
-    private boolean searchPlz(Row row, String key){
-        return row.getPlz().contains(key);
-    }
-    private boolean searchPV(Row row, String key){
-        return row.isPersonenverkehr().contains(key);
-    }
-    private boolean searchGV(Row row, String key){
-        return row.isGueterverkehr().contains(key);
-    }
-    
-    public boolean searchAll(Row row,String key){
-        return searchUnternehmen(row,key) ||
-        searchStrasse(row,key)||
-        searchPlz(row,key)||
-        searchOrt(row,key)||
-        searchPV(row, key)||
-        searchGV(row,key);
-    }
-    
+    public void normalSearch() {
+        searchString = searchString.toLowerCase();
 
-    public void caseSensitiveSearch(String newValue) {
+        rows.setAll(model.getRows().filtered(row -> {
+            return searchAll(row);
+        }));
 
-        filteredRows.setPredicate(row -> {
-            if (newValue.isBlank() || newValue.isEmpty() || newValue == null) {
-                return true;
-            }
-
-            String searchString = newValue;
-
-            if (row.getUnternehmen().contains(searchString)) {
-                return true;
-            } else if (row.getOrt().contains(searchString)) {
-                return true;
-            } else if (row.getPlz().contains(searchString)) {
-                return true;
-            } else if (row.getStrasse().contains(searchString)) {
-                return true;
-            } else if (row.isGueterverkehr().contains(searchString)) {
-                return true;
-            } else if (row.isPersonenverkehr().contains(searchString)) {
-                return true;
-            } else {
-                return false;
-            }
-        });
-    }public void caseSensitiveSearch2(String newValue) {
-
-        filteredRows.setPredicate(row -> {
-                return searchAll(row, newValue);
-            });
     }
 
-    public void inland() {
-        inland = !inland;
+    public void searchFilterer() {
+
+        switch (selectedSearchColumn) {
+            case 0:
+                searchMaster();
+                break;
+            case 1:
+                rows.setAll(model.getRows().filtered(row -> {
+                    return searchUnternehmen(row,caseToggle);
+                }));
+                break;
+            case 2:
+                rows.setAll(model.getRows().filtered(row -> {
+                    return searchStrasse(row);
+                }));
+
+                break;
+            case 3:
+                rows.setAll(model.getRows().filtered(row -> {
+                    return searchPlz(row);
+                }));
+
+                break;
+            case 4:
+                rows.setAll(model.getRows().filtered(row -> {
+                    return searchOrt(row);
+                }));
+                break;
+            default:
+                resetFilter();
+                break;
+        }
+    }
+
+    private boolean searchUnternehmen(Row row,boolean caseSensitive) {
+        if(!caseSensitive)
+        return row.getUnternehmen().toLowerCase().contains(searchString);
+        else{
+            return row.getUnternehmen().toLowerCase().contains(searchString);
+        }
+    }
+
+    private boolean searchStrasse(Row row) {
+        return row.getStrasse().contains(searchString);
+    }
+
+    private boolean searchOrt(Row row) {
+        return row.getOrt().contains(searchString);
+    }
+
+    private boolean searchPlz(Row row) {
+        return row.getPlz().contains(searchString);
+    }
+
+    private boolean searchPV(Row row) {
+        return row.isPersonenverkehr().contains(searchString);
+    }
+
+    private boolean searchGV(Row row) {
+        return row.isGueterverkehr().contains(searchString);
+    }
+
+    private boolean searchAll(Row row) {
+        return searchUnternehmen(row,caseToggle)
+                || searchStrasse(row)
+                || searchPlz(row)
+                || searchOrt(row)
+                || searchPV(row)
+                || searchGV(row);
     }
 
     public void filterInland(boolean b) {
 
         if (b) {
-            filteredRows.setPredicate(row -> {
-
-                char c = row.getPlz().charAt(0);
-                return c <= '9' || c == 'D';
-
-            });
+            rows.setAll(model.getRows()
+                    .stream()
+                    .filter(row -> {
+                        char c = row.getPlz().charAt(0);
+                        return c <= '9' || c == 'D';
+                    }).toList());
         } else {
             resetFilter();
         }
     }
 
     public void filterAusland(boolean b) {
-        
-        if(b){
-        filteredRows.setPredicate(row -> {
-                char c = row.getPlz().charAt(0);
-                return c > '9' && c != 'D';
-        });
-        
+
+        if (b) {
+            rows.setAll(model.getRows()
+                    .stream()
+                    .filter(row -> {
+                        char c = row.getPlz().charAt(0);
+                        return c > '9' && c != 'D';
+                    }).toList());
         } else {
             resetFilter();
         }
 
     }
 
-    public void ausland() {
-        ausland = !ausland;
+    public void personfilter(boolean b) {
+        if (b) {
+            rows.setAll(model.getRows()
+                    .stream()
+                    .filter(row -> row.isPersonenverkehr().equals("Ja"))
+                    .toList());
+
+        } else {
+            resetFilter();
+        }
     }
 
-    public void personfilter() {
+    public void gueterfilter(boolean b) {
+        if (b) {
+            rows.setAll(model.getRows()
+                    .stream()
+                    .filter(row -> row.isGueterverkehr().equals("Ja"))
+                    .toList());
+        } else {
+            resetFilter();
+        }
+    }
+
+    void updateSearchColumn(Number newvalue) {
+        selectedSearchColumn = newvalue.intValue();
+
+    }
+
+    void updateSearchString(String newvalue) {
+        searchString = newvalue;
+         if(!caseToggle){
+            searchString = searchString.toLowerCase();
+        }
         
-        filteredRows.setPredicate(
-                row -> {return row.isPersonenverkehr().equals("Ja");
-        });
-        
-        
+        searchFilterer();
     }
 
 }
