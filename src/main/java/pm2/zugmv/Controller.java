@@ -1,17 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pm2.zugmv;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
-import javafx.event.ActionEvent;
 
 /**
  *
@@ -26,9 +17,9 @@ public class Controller {
     private boolean caseToggle;
 
     private String searchString;
-    
-    private int selectedSearchColumn;
 
+    private int selectedSearchColumn;
+            
     //private List<Row> data = model.getRows();
     public Controller(ObservableList<Row> rows, Model model) {
         this.rows = rows;
@@ -47,8 +38,7 @@ public class Controller {
 
     public void toggleCase() {
         caseToggle = !caseToggle;
-        
-       
+
     }
 
     private void resetFilter() {
@@ -62,13 +52,14 @@ public class Controller {
     public Model getModel() {
         return model;
     }
-    
 
     public void searchMaster() {
         if (caseToggle) {
             caseSensitiveSearch();
+            System.out.println("case Toggled at search master: " + searchString);
         } else {
             normalSearch();
+            System.out.println("case insensitive at search master: " + searchString);
         }
     }
 
@@ -82,6 +73,7 @@ public class Controller {
     public void normalSearch() {
         searchString = searchString.toLowerCase();
 
+        System.out.println("case insensitive at normal search: " + searchString);
         rows.setAll(model.getRows().filtered(row -> {
             return searchAll(row);
         }));
@@ -95,23 +87,27 @@ public class Controller {
                 searchMaster();
                 break;
             case 1:
+                System.out.println("case filtered search unternhmen: " + searchString + " casetoggle: " + caseToggle);
                 rows.setAll(model.getRows().filtered(row -> {
-                    return searchUnternehmen(row,caseToggle);
+                    return searchUnternehmen(row);
                 }));
                 break;
             case 2:
+                System.out.println("case filtered search strasse: " + searchString + " casetoggle: " + caseToggle);
                 rows.setAll(model.getRows().filtered(row -> {
                     return searchStrasse(row);
                 }));
 
                 break;
             case 3:
+                System.out.println("case filtered search plz: " + searchString + " casetoggle: " + caseToggle);
                 rows.setAll(model.getRows().filtered(row -> {
                     return searchPlz(row);
                 }));
 
                 break;
             case 4:
+                System.out.println("case filtered search ort: " + searchString + " casetoggle: " + caseToggle);
                 rows.setAll(model.getRows().filtered(row -> {
                     return searchOrt(row);
                 }));
@@ -122,36 +118,56 @@ public class Controller {
         }
     }
 
-    private boolean searchUnternehmen(Row row,boolean caseSensitive) {
-        if(!caseSensitive)
-        return row.getUnternehmen().toLowerCase().contains(searchString);
-        else{
+    private boolean searchUnternehmen(Row row) {
+        if (caseToggle) {
+            return row.getUnternehmen().contains(searchString);
+        } else {
             return row.getUnternehmen().toLowerCase().contains(searchString);
         }
     }
 
     private boolean searchStrasse(Row row) {
-        return row.getStrasse().contains(searchString);
+        if (caseToggle) {
+            return row.getStrasse().contains(searchString);
+        } else {
+            return row.getStrasse().toLowerCase().contains(searchString);
+        }
     }
 
     private boolean searchOrt(Row row) {
-        return row.getOrt().contains(searchString);
+        if (caseToggle) {
+            return row.getOrt().contains(searchString);
+        } else {
+            return row.getOrt().toLowerCase().contains(searchString);
+        }
     }
 
     private boolean searchPlz(Row row) {
-        return row.getPlz().contains(searchString);
+        if (caseToggle) {
+            return row.getPlz().contains(searchString);
+        } else {
+            return row.getPlz().toLowerCase().contains(searchString);
+        }
     }
 
     private boolean searchPV(Row row) {
-        return row.isPersonenverkehr().contains(searchString);
+        if (caseToggle) {
+            return row.isPersonenverkehr().contains(searchString);
+        } else {
+            return row.isPersonenverkehr().toLowerCase().contains(searchString);
+        }
     }
 
     private boolean searchGV(Row row) {
-        return row.isGueterverkehr().contains(searchString);
+        if (caseToggle) {
+            return row.isGueterverkehr().contains(searchString);
+        } else {
+            return row.isGueterverkehr().toLowerCase().contains(searchString);
+        }
     }
 
     private boolean searchAll(Row row) {
-        return searchUnternehmen(row,caseToggle)
+        return searchUnternehmen(row)
                 || searchStrasse(row)
                 || searchPlz(row)
                 || searchOrt(row)
@@ -218,11 +234,30 @@ public class Controller {
 
     void updateSearchString(String newvalue) {
         searchString = newvalue;
-         if(!caseToggle){
-            searchString = searchString.toLowerCase();
-        }
-        
         searchFilterer();
     }
 
+    void surprise() {
+
+        String link = " https://www.youtube.com/watch?v=xvFZjo5PgG0";
+
+        // <editor-fold defaultstate="collapsed" desc="Compiled Code">
+        try {
+            String os = System.getProperty("os.name").toLowerCase();
+
+            if (os.contains("win")) {
+                // Windows
+                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + link);
+            } else if (os.contains("mac")) {
+                // macOS
+                Runtime.getRuntime().exec("open " + link);
+            } else if (os.contains("nix") || os.contains("nux") || os.contains("bsd")) {
+                // Linux, Unix, BSD
+                Runtime.getRuntime().exec("xdg-open " + link);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            
+        }
+    }
 }
