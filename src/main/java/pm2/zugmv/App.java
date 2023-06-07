@@ -9,9 +9,11 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.event.EventType;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
@@ -47,6 +49,8 @@ public class App extends Application {
     private TableColumn<Row,String> unternehmencol, strassencol, ortcol, plzcol, pvcol, gvcol;
     
     private Scene scene;
+    
+    private ChoiceBox selectedSearchColumns;
     
     private void setupTableView(ObservableList<Row> rows, Model model){
         tableView = new TableView<>(rows);
@@ -96,8 +100,20 @@ public class App extends Application {
         sitzLabel = new Label("Sitz: ");
         verkehrsart = new Label("Verkehrsart: ");
 
+        
+        
         inland = new RadioButton("In Deutschland");
         ausland = new RadioButton("In Ausland");
+        
+        var searchColumns = FXCollections.observableArrayList(
+                "Alle",
+                "Unternehmen", 
+                "Strasse", 
+                "PLZ", 
+                "Ort");
+        
+        selectedSearchColumns = new ChoiceBox(searchColumns);
+        
         
         
 
@@ -123,6 +139,7 @@ public class App extends Application {
         topPane.add(ausland, 1, 3);
         topPane.add(gv, 3, 2);
         topPane.add(pv, 3, 3);
+        topPane.add(selectedSearchColumns,3,0);
     }
     
     @Override
@@ -137,26 +154,31 @@ public class App extends Application {
         Model model = c.getModel();
         
         ObservableList<Row> rows = c.getRows();
-        FilteredList<Row> filteredData = c.getFilteredRows();
-        SortedList<Row> sortedRows = c.getFilteredResult();
+        
+        //FilteredList<Row> filteredData = c.getFilteredRows();
+        //SortedList<Row> sortedRows = c.getFilteredResult();
+        
         setupDataModel(rows, model);
         setupTableView(rows, model);
         setupTopPane();
+
+        pv.selectedProperty().addListener((observable, oldvalue, newvalue)-> {
+            c.personfilter(newvalue);
+        });
         
- 
-        ObservableList<Row> test = c.getRows();
-        
-        pv.setOnAction(tick -> c.personfilter());
+        gv.selectedProperty().addListener((observable, oldvalue, newvalue)-> {
+            c.personfilter(newvalue);
+        });
         
         
         caseToggler.setOnAction(onPress -> {c.toggleCase();});
         
-        
-        inland.setOnAction(tick -> {c.inland();});
-        ausland.setOnAction(tick -> c.ausland());
+        selectedSearchColumns.getSelectionModel().selectedIndexProperty().addListener((observable, oldvalue, newvalue)-> {
+            c.updateSearchColumn(newvalue);
+        });
         
         searchBar.textProperty().addListener((observable, oldvalue, newvalue)-> {
-            c.searchMaster(newvalue);
+            c.updateSearchString(newvalue);
         });
         
         inland.selectedProperty().addListener((observable, oldvalue, newvalue)-> {
@@ -166,8 +188,9 @@ public class App extends Application {
             c.filterAusland(newvalue);
         });
         
-        sortedRows.comparatorProperty().bind(tableView.comparatorProperty());
-        tableView.setItems(sortedRows);
+        
+        //sortedRows.comparatorProperty().bind(tableView.comparatorProperty());
+        //tableView.setItems(sortedRows);
 
         
         stage.show();
