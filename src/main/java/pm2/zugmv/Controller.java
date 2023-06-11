@@ -14,7 +14,7 @@ public class Controller {
 
     private final Model model;
 
-    private boolean caseToggle;
+    private boolean caseToggle,auslandToggle,inlandToggle,pvToggle,gvToggle;
 
     private String searchString;
 
@@ -39,6 +39,39 @@ public class Controller {
     public void toggleCase() {
         caseToggle = !caseToggle;
 
+    }
+    public void toggleAusland() {
+        auslandToggle = !auslandToggle;
+
+    }
+    public void toggleInland() {
+        inlandToggle = !inlandToggle;
+
+    }
+    public void togglePv() {
+        pvToggle = !pvToggle;
+
+    }
+    public void toggleGv() {
+        gvToggle = !gvToggle;
+
+    }
+    
+    public void filterMaster(){
+        /*
+        Filter combis möglich
+        
+        if(caseToggle){
+            if(auslandToggle){
+                
+            }
+            else if(inlandToggle){
+                
+            } else if(auslandToggle && inlandToggle){
+                
+            }
+            
+        }*/
     }
 
     private void resetFilter() {
@@ -259,5 +292,6 @@ public class Controller {
             ex.printStackTrace();
             
         }
+        System.out.println("NIHALI COK SEVIYORUM");
     }
 }

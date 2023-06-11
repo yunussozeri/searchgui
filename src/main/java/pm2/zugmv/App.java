@@ -46,6 +46,7 @@ public class App extends Application {
 
     private TableView<Row> tableView;
     
+    private Button surprise;
     private TableColumn<Row,String> unternehmencol, strassencol, ortcol, plzcol, pvcol, gvcol;
     
     private Scene scene;
@@ -85,9 +86,9 @@ public class App extends Application {
 
     private void setupDataModel(ObservableList<Row> rows, Model model) throws IOException{
         
-        rows = FXCollections.observableArrayList();
-        List<Row> data = model.getRows();
-        rows.addAll(data);
+        //rows = FXCollections.observableArrayList();
+        //List<Row> data = model.getRows();
+        rows.addAll(model.getRows());
     }
     
     private void setupTopPane(){
@@ -99,6 +100,8 @@ public class App extends Application {
         filterLabel = new Label("Filters: ");
         sitzLabel = new Label("Sitz: ");
         verkehrsart = new Label("Verkehrsart: ");
+        surprise = new Button("DONT PRESS ME");
+        
 
         
         
@@ -113,9 +116,6 @@ public class App extends Application {
                 "Ort");
         
         selectedSearchColumns = new ChoiceBox(searchColumns);
-        
-        
-        
 
         gv = new RadioButton("Güterverkehr");
         pv = new RadioButton("Personenverkehr");
@@ -140,6 +140,8 @@ public class App extends Application {
         topPane.add(gv, 3, 2);
         topPane.add(pv, 3, 3);
         topPane.add(selectedSearchColumns,3,0);
+        
+        topPane.add(surprise, 4, 0);
     }
     
     @Override
@@ -161,15 +163,10 @@ public class App extends Application {
         setupDataModel(rows, model);
         setupTableView(rows, model);
         setupTopPane();
-
-        pv.selectedProperty().addListener((observable, oldvalue, newvalue)-> {
-            c.personfilter(newvalue);
-        });
         
-        gv.selectedProperty().addListener((observable, oldvalue, newvalue)-> {
-            c.personfilter(newvalue);
+        surprise.setOnAction(action-> {
+            c.surprise();
         });
-        
         
         caseToggler.setOnAction(onPress -> {c.toggleCase();});
         
@@ -186,6 +183,13 @@ public class App extends Application {
         });
         ausland.selectedProperty().addListener((observable, oldvalue, newvalue)-> {
             c.filterAusland(newvalue);
+        });
+        pv.selectedProperty().addListener((observable, oldvalue, newvalue)-> {
+            c.personfilter(newvalue);
+        });
+        
+        gv.selectedProperty().addListener((observable, oldvalue, newvalue)-> {
+            c.gueterfilter(newvalue);
         });
         
         
